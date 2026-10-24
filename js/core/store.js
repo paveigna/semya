@@ -1,6 +1,6 @@
 // Single source of truth. All data lives only on this device (localStorage).
 // To add sync later, replace load/persist with a remote adapter; the rest of the app is unchanged.
-import { DEFAULT_SETTINGS, STORAGE_KEY } from '../config.js';
+import { DEFAULT_SETTINGS, GEMINI_MODELS, STORAGE_KEY } from '../config.js';
 
 const listeners = new Set();
 let state = load();
@@ -13,6 +13,7 @@ function blank() {
 function migrate(s) {
   const next = { ...blank(), ...s };
   next.settings = { ...DEFAULT_SETTINGS, ...(s.settings || {}) };
+  if (!GEMINI_MODELS.includes(next.settings.geminiModel)) next.settings.geminiModel = GEMINI_MODELS[0];
   next.members = Array.isArray(s.members) ? s.members : [];
   next.events = Array.isArray(s.events) ? s.events : [];
   next.version = 1;

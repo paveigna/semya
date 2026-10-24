@@ -1,5 +1,5 @@
 // Central configuration: change colours, presets and defaults here.
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.1.1';
 export const STORAGE_KEY = 'family-calendar:v1';
 export const JOINT_ID = 'family'; // pseudo-member id for joint family events
 
@@ -48,7 +48,7 @@ export const REPEATS = [
 
 export const HELPER_ROLES = ['Няня', 'Уборка', 'Репетитор', 'Водитель', 'Тренер'];
 
-export const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash'];
+export const GEMINI_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash']; // 2.5 models are retired
 
 export const DEFAULT_SETTINGS = {
   jointColor: '#B08D57',

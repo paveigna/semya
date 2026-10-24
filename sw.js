@@ -1,6 +1,6 @@
 // Offline support. Network first (so updates appear right away), cache as fallback.
 // Bump VERSION when you upload a new release.
-const VERSION = 'fc-1.1.0';
+const VERSION = 'fc-1.1.1';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/main.js', './js/config.js',

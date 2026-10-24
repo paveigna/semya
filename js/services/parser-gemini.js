@@ -72,6 +72,16 @@ function sanitize(raw, state) {
   return { action: 'unknown', source: 'gemini' };
 }
 
+async function geminiError(r, model) {
+  let msg = '';
+  try { msg = (await r.json())?.error?.message || ''; } catch { /* no body */ }
+  if (/api key not valid|API_KEY_INVALID/i.test(msg)) return 'Неверный ключ Gemini. Скопируйте его заново';
+  if (r.status === 404) return `Модель ${model} недоступна. Выберите другую модель`;
+  if (r.status === 429) return 'Лимит Gemini исчерпан. Попробуйте позже';
+  if (r.status === 403) return 'Ключ не имеет доступа к Gemini API';
+  return `Gemini: ошибка ${r.status}${msg ? ` — ${msg.slice(0, 120)}` : ''}`;
+}
+
 export async function parseGemini(text, state, { key, model }, now = new Date()) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
   const body = {
@@ -82,8 +92,11 @@ export async function parseGemini(text, state, { key, model }, now = new Date())
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
-    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
-    if (!r.ok) throw new Error(r.status === 400 || r.status === 403 ? 'Неверный ключ Gemini' : `Gemini: ошибка ${r.status}`);
+    let r;
+    try {
+      r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+    } catch (e) { throw new Error(e.name === 'AbortError' ? 'Gemini не ответил вовремя' : 'Нет связи с Gemini'); }
+    if (!r.ok) throw new Error(await geminiError(r, model));
     const j = await r.json();
     const out = j.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
     return sanitize(JSON.parse(out.replace(/```json|```/g, '').trim()), state);
